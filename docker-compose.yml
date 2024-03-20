@@ -3,7 +3,11 @@
 version: '3'
 
 services:
+
+
   wordpress1:
+    container_name: wordpress1
+
     build:
       context: ./wordpress1
       dockerfile: Dockerfile
@@ -22,6 +26,8 @@ services:
       - net
 
   wordpress2:
+    container_name: wordpress2
+
     build:
       context: ./wordpress2
       dockerfile: Dockerfile
@@ -64,7 +70,19 @@ services:
     #   - 'mysqldb1:/var/lib/mysql'
     networks:
       - app1
-
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - wordpress1
+      - wordpress2
+    networks:      
+      - net
+      
 networks:
   app0:
     internal: true
