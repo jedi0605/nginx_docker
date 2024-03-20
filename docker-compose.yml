@@ -1,26 +1,74 @@
+# docker-compose.yml
+
 version: '3'
+
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx
+  wordpress1:
+    build:
+      context: ./wordpress1
+      dockerfile: Dockerfile
+    restart: always
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - "8000:80" # Expose WordPress1 on port 8000
     depends_on:
+      - db1
+    environment:
+      WORDPRESS_DB_HOST: db1:3306
+      WORDPRESS_DB_NAME: wordpress_db1
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: your_db_password
+    networks:
+      - app0
+      - net
+
+  wordpress2:
+    build:
+      context: ./wordpress2
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8001:80" # Expose WordPress2 on port 8001
+    depends_on:
+      - db2
+    environment:
+      WORDPRESS_DB_HOST: db2:3306
+      WORDPRESS_DB_NAME: wordpress_db2
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: your_db_password
+    networks:
       - app1
-      - app2
+      - net
 
+  db1:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress_db1
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: your_db_password
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    # volumes:
+    #   - 'mysqldb0:/var/lib/mysql'
+    networks:
+      - app0
+
+  db2:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress_db2
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: your_db_password
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    # volumes:
+    #   - 'mysqldb1:/var/lib/mysql'
+    networks:
+      - app1
+
+networks:
+  app0:
+    internal: true
   app1:
-    build:
-      context: ./app1
-    container_name: app1
-    ports:
-      - "8081:80"
-
-  app2:
-    build:
-      context: ./app2
-    container_name: app2
-    ports:
-      - "8082:80"
+    internal: true
+  net:
+    external: false
